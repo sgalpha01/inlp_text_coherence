@@ -1,6 +1,10 @@
 # Datasets
-data/*
-!data/.gitkeep
+processed_data/*
+!processed_data/.gitkeep
+
+# Checkpoints
+checkpoint/
+lightning_checkpoints/
 
 # Logs
 logs/*
