@@ -112,7 +112,7 @@ class ModelWrapper(LightningModule):
     def __init__(self, args):
         super(ModelWrapper, self).__init__()
         self.config_args = args
-        # Load pretrained hierarchical model
+        # Load pretrained transformer model
         self.doc_encoder = get_module(args.arch, base_arch=args.mtl_base_arch)(args)
 
         # Task specific model handlers
@@ -140,7 +140,7 @@ class ModelWrapper(LightningModule):
             # Calculates F0.5 score at the inference time and while training use accuracy metric
             self.train_metric = Accuracy(task="multiclass", num_classes=2)
             self.val_metric = Accuracy(task="multiclass", num_classes=2)
-            self.test_metric = FBetaScore(num_classes=2, beta=0.5, average='none')
+            self.test_metric = FBetaScore(task="multiclass", num_classes=2, beta=0.5)
         elif self.config_args.task == "sentence-score-prediction":
             self.task_head = SentenceScorer(
                 self.doc_encoder.tf2.config.hidden_size, args.dropout_rate
@@ -558,7 +558,6 @@ class TextDataModule(LightningDataModule):
         return test_dataset
 
 
-
 def start_training(args):
     model_name = args.logger_exp_name
 
@@ -726,7 +725,6 @@ def check_config(config):
             "[%s] changing number of GPUs from %d to 1." % (config.arch, config.gpus)
         )
         config.gpus = 1
-
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -966,6 +964,36 @@ if __name__ == "__main__":
         default=0,
         help="enable the automatic mixed precision training",
     )
+    # LoRA configs
+    parser.add_argument(
+        "--use_lora",
+        action="store_true",
+        default=False,
+        help="Flag to determine whether to use LoRA for model fine-tuning."
+    )
+
+    # Add arguments for LoRA rank and alpha settings
+    parser.add_argument(
+        "--lora_rank",
+        type=int,
+        default=8,
+        help="Rank for the low-rank approximation matrices in LoRA."
+    )
+
+    parser.add_argument(
+        "--lora_alpha",
+        type=int,
+        default=32,
+        help="Scaling factor alpha for LoRA."
+    )
+
+    parser.add_argument(
+        "--use_qlora",
+        action="store_true",
+        default=False,
+        help="Flag to determine whether to use QLoRA for model fine-tuning."
+    )
+    
     args = parser.parse_args()
 
     full_arch_name = args.arch
