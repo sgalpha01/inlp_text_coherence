@@ -31,12 +31,34 @@ level of the given document.
 
 ### Training and Evaluation manually
 
-To train different transformer based architecture models:
+conda activate /scratch/manender_inlp/conda_envs/inlp
+export TOKENIZERS_PARALLELISM=true
 
-```
-python main.py --arch <ARCH> --epochs <EPOCHS> --gpus <GPUS> --batch_size <BATCH_SIZE> --learning_rate <LR> --corpus <CORPUS> --sub_corpus <SUB_CORPUS> --model_name <MODEL_NAME> --freeze_emb_layer --online_mode <ONLINE_MODE> --task <TASK>
-```
 
+## For Training
+
+# Task: 3-way-classification
+# Without LoRA
+python main.py --arch vanilla --epochs 10 --gpus 1 --batch_size 1 --learning_rate 1e-5 --corpus gcdc --sub_corpus All --model_name roberta-base --freeze_emb_layer --online_mode 0 --task 3-way-classification --disable_mtl 1
+
+# With LoRA:
+python main.py --arch vanilla --epochs 10 --gpus 1 --batch_size 1 --learning_rate 1e-5 --corpus gcdc --sub_corpus All --model_name roberta-base --freeze_emb_layer --online_mode 0 --task 3-way-classification --disable_mtl 1 --use_lora
+
+
+
+## For Testing
+
+# Task: 3-way-classification
+# Without LoRA:
+python main.py --arch vanilla --gpus 1 --batch_size 1 --corpus gcdc --sub_corpus All --model_name roberta-base --freeze_emb_layer --online_mode 0 --task 3-way-classification --disable_mtl 1 --inference --checkpoint_path "/scratch/manender_inlp/inlp_text_coherence/lightning_checkpoints/gcdc-All-vanilla-3-way-classification-roberta-base/epoch=9-step=32000.ckpt" --use_lora
+
+
+# Task: sentence-ordering
+# Without LoRA:
+python main.py --arch vanilla --gpus 1 --batch_size 1  --corpus gcdc --sub_corpus All --model_name roberta-base --freeze_emb_layer --online_mode 0 --task sentence-ordering --disable_mtl 1 --inference --checkpoint_path "/scratch/suyash.gupta/inlp_text_coherence/lightning_checkpoints/gcdc-Yahoo-vanilla-sentence-ordering-roberta-base/epoch=1-step=15980.ckpt"
+
+# With LoRA:
+python main.py --arch vanilla --gpus 1 --batch_size 1  --corpus gcdc --sub_corpus All --model_name roberta-base --freeze_emb_layer --online_mode 0 --task sentence-ordering --disable_mtl 1 --inference --checkpoint_path "/scratch/suyash.gupta/inlp_text_coherence/lightning_checkpoints/gcdc-Yahoo-vanilla-sentence-ordering-roberta-base/epoch=9-step=79900-lora.ckpt" --use_lora
 where,
 
 - `corpus` can take one of 'gcdc' or 'wsj'.
@@ -49,23 +71,4 @@ To evaluate the trained model over test dataset:
 
 ```
 python main.py --inference --arch <ARCH> --gpus <GPUS> --batch_size <BATCH_SIZE> --corpus <CORPUS> --sub_corpus <SUB_CORPUS> --model_name <MODEL_NAME> --freeze_emb_layer --online_mode <ONLINE_MODE> --task <TASK>'
-```
-
-### Training and Evaluation through automated script
-
-Whole pipeline can be executed using the following bash file. User need to change the variables accordingly as mentioned in bash script.
-
-```
-./run.sh
-```
-### Citation
-One can cite it as follows:
-
-```
-@article{abhishek2021transformer,
-  title={Transformer models for text coherence assessment},
-  author={Abhishek, Tushar and Rawat, Daksh and Gupta, Manish and Varma, Vasudeva},
-  journal={arXiv preprint arXiv:2109.02176},
-  year={2021}
-}
 ```
